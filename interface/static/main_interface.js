@@ -27,6 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/run', { method: 'POST', body: formData });
             const data = await response.json();
 
+            if (!response.ok) {
+                throw new Error(data.error || `Server error: ${response.status}`);
+            }
+
             const stepsData = Array.isArray(data) ? data : data.steps;
             if (!stepsData || stepsData.length === 0) throw new Error("No steps returned.");
 

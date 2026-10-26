@@ -8,6 +8,8 @@ dependencies = [
     "datasets>=4.4.1",
     "vllm==0.10.0",
     "PyYAML>=6.0",
+    "polars>=2.1.0",
+    "transformers<5",
 ]
 
 [dependency-groups]

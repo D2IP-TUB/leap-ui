@@ -28,7 +28,7 @@ SERVER_URL = "http://localhost:8000/process"
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("main_interface.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="main_interface.html")
 
 
 @app.post("/api/run")
@@ -54,7 +54,7 @@ async def run_experiment(file: UploadFile = File(...), question: str = Form(...)
         rows = [[str(item) if item is not None else "" for item in row] for row in df.rows()]
 
         data_structure = [
-            {"id": str(0), "table": {"header": headers, "rows": rows, "name": file.filename}, "question": question, "answers": None}
+            {"id": str(0), "table": {"header": headers, "rows": rows, "name": file.filename}, "question": question, "answers": []}
         ]
 
         hf_dataset = Dataset.from_list(data_structure)
@@ -68,11 +68,14 @@ async def run_experiment(file: UploadFile = File(...), question: str = Form(...)
         response = requests.post(SERVER_URL, json=payload, headers=header)
 
         if response.status_code != 200:
+            print(f"[ERROR] Backend returned {response.status_code}: {response.text}")
             return JSONResponse(content={"error": f"Backend Error: {response.text}"}, status_code=500)
 
         return response.json()
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         if os.path.exists(temp_path):
             shutil.rmtree(temp_path)
 
@@ -80,4 +83,4 @@ async def run_experiment(file: UploadFile = File(...), question: str = Form(...)
 
 
 if __name__ == "__main__":
-    uvicorn.run("interface.main_interface:app", host="0.0.0.0", port=8082, reload=True)
+    uvicorn.run("interface.main_interface:app", host="0.0.0.0", port=8080, reload=True)
